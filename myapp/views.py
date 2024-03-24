@@ -15,7 +15,7 @@ from django.http import JsonResponse
 import openai
 import os
 
-
+das = 3
 
 history = []
 
