@@ -15,7 +15,7 @@ from django.http import JsonResponse
 import openai
 import os
 
-openai.api_key='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' 
+
 
 history = []
 
@@ -34,6 +34,7 @@ def get_completion(prompt):
    history.append({'role':'assistant', 'content':response})
    print(response) 
    return response 
+
 def index(request):
     return HttpResponse("Communication start")
     
