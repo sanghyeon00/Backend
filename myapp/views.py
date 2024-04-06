@@ -28,7 +28,6 @@ System_message = '''
 '''
 mutiple_question = '''if we want you make problem, you always make five-choice question.'''
 write_question = '''if we want you make problem, you always make one Short answer question'''
-openai.api_key = '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'
 def get_completion(prompt):     
     history.append({'role':'user','content':prompt}) 
     query = openai.ChatCompletion.create( 
