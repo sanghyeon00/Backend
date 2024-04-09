@@ -16,6 +16,7 @@ from myapp import gpt_prompt
 import openai
 import os
 
+openai.api_key = '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'
 history = []
 
 Quest_dict = {'객관식-빈칸': 1, '객관식-단답형': 2, '객관식-문장형': 3, '단답형-빈칸': 4, '단답형-문장형': 5, 'OX선택형-O/X': 6, '서술형-코딩': 7}
