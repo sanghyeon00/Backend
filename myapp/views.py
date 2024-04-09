@@ -16,13 +16,14 @@ from myapp import gpt_prompt
 import openai
 import os
 
-
 history = []
-def get_completion(prompt):     
+
+Quest_dict = {'객관식-빈칸': 1, '객관식-단답형': 2, '객관식-문장형': 3, '단답형-빈칸': 4, '단답형-문장형': 5, 'OX선택형-O/X': 6, '서술형-코딩': 7}
+def get_completion(prompt, numberKey,count):     
     history.append({'role':'user','content':gpt_prompt.prompt_1}) 
     query = openai.ChatCompletion.create( 
        model="gpt-4",
-       messages=[{"role": "system", "content": gpt_prompt.Short_answer_message}, {'role':'user','content':gpt_prompt.prompt_4}], 
+       messages=[{"role": "system", "content": gpt_prompt.System_lst[numberKey]}, {'role':'user','content':gpt_prompt.prompt_lst[numberKey](count)}], 
        max_tokens=1024, 
        n=1,
        stop=None,
@@ -36,10 +37,10 @@ def get_completion(prompt):
 def index(request):
     return HttpResponse("Communication start")
     
-def query_view(request): 
+def query_view(request,numberKey, count): 
     prompt = request.data.get('username') 
     prompt=str(prompt)
-    response = get_completion(prompt)
+    response = get_completion(prompt, numberKey,count)
     return JsonResponse({'response': response}), response 
 
 @api_view(['POST'])
@@ -65,10 +66,7 @@ def login_view(request):
         # �α��� ���� ó��
         return Response({'message': 'Fail'}, status=status.HTTP_401_UNAUTHORIZED)
 
-
-@api_view(['POST'])
-def GenerateWriteProblem(request):
-    a, tmp = query_view(request)
+def GenerateWriteProblem(tmp):
     lst = list(tmp.split("\n"))
     rtr = []
     check = False
@@ -78,9 +76,7 @@ def GenerateWriteProblem(request):
             id = 0
             while i[id] == ' ' or i[id] == '.' or i[id] == '1' or i[id] == '2' or i[id] == '3' or i[id] == '4':
                 id += 1 
-            tempt['question'] = i[id::]
-            rtr.append(tempt)
-            tempt = dict()
+            tempt['content'] = i[id::]
             check = False
             continue
         if i[0:2] == '문제':
@@ -95,16 +91,16 @@ def GenerateWriteProblem(request):
                     check = True
                     continue
                 b = i[id::]
-                tempt['question'] = b
-                rtr.append(tempt)
-                tempt = dict()
+                tempt['content'] = b
+        elif i[0:2] == '정답':
+            tempt['answer'] = i[4::]
+            rtr.append(tempt)
+            tempt = dict()
     print(rtr)
-    return Response(rtr, status=status.HTTP_200_OK)
+    return rtr
                 
 
-@api_view(['POST'])
-def GenerateMultipleProblem(request):
-    a, tmp = query_view(request)
+def GenerateMultipleProblem(tmp):
     lst = list(tmp.split("\n"))
     rtr = []
     check = False
@@ -115,7 +111,7 @@ def GenerateMultipleProblem(request):
             id = 0
             while i[id] == ' ' or i[id] == '.' or i[id] == '1' or i[id] == '2' or i[id] == '3' or i[id] == '4':
                 id += 1 
-            tempt['question'] = i[id::]
+            tempt['content'] = i[id::]
             check = False
             continue
         if i[0:2] == '문제':
@@ -129,7 +125,7 @@ def GenerateMultipleProblem(request):
                     check = True
                     continue
                 b = i[id::]
-                tempt['question'] = b
+                tempt['content'] = b
                 tempt['options'] = []
         elif len(i) > 0 and i[0]!= '-' and i[0] != ' ' and i[0:2] != '정답' and 1 <= int(i[0]) <= 4:
             b = i[4:]
@@ -142,4 +138,30 @@ def GenerateMultipleProblem(request):
             tempt = dict()
             continue
     print(rtr)
-    return Response(rtr, status=status.HTTP_200_OK)
+    return rtr
+
+@api_view(['POST'])
+def GenerateQuestion(request):
+    print(request.data.get('selections'))
+    answer = {}
+    answer['questions'] = []
+    for tempt in request.data.get('selections'):
+        if 1 <= Quest_dict[tempt] <= 3:
+            tmp = dict()
+            tmp['type'] = Quest_dict[tempt]
+            a, t = query_view(request,Quest_dict[tempt], request.data.get('selections')[tempt])
+            tmp['items'] = GenerateMultipleProblem(t)
+            tmp['count'] = request.data.get('selections')[tempt]
+            answer['questions'].append(tmp)
+        elif 4 <= Quest_dict[tempt] <= 6:
+            tmp = dict()
+            tmp['type'] = Quest_dict[tempt]
+            a, t = query_view(request,Quest_dict[tempt], request.data.get('selections')[tempt])
+            tmp['items'] = GenerateWriteProblem(t)
+            tmp['count'] = request.data.get('selections')[tempt]
+            answer['questions'].append(tmp)
+            
+            
+            
+    return Response(answer, status=status.HTTP_200_OK)
+    
