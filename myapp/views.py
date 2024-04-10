@@ -16,7 +16,7 @@ from myapp import gpt_prompt
 import openai
 import os
 
-openai.api_key = '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'
+openai.api_key = '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'
 history = []
 
 Quest_dict = {'객관식-빈칸': 1, '객관식-단답형': 2, '객관식-문장형': 3, '단답형-빈칸': 4, '단답형-문장형': 5, 'OX선택형-O/X': 6, '서술형-코딩': 7}
@@ -24,7 +24,7 @@ def get_completion(prompt, numberKey,count):
     history.append({'role':'user','content':gpt_prompt.prompt_1}) 
     query = openai.ChatCompletion.create( 
        model="gpt-4",
-       messages=[{"role": "system", "content": gpt_prompt.System_lst[numberKey]}, {'role':'user','content':gpt_prompt.prompt_lst[numberKey](count)}], 
+       messages=[{"role": "system", "content": gpt_prompt.System_lst[7]}, {'role':'user','content':gpt_prompt.prompt_lst[7](count)}], 
        max_tokens=1024, 
        n=1,
        stop=None,
@@ -140,7 +140,53 @@ def GenerateMultipleProblem(tmp):
             continue
     print(rtr)
     return rtr
-
+def Code_problem(tmp):
+    lst = list(tmp.split("\n"))
+    rtr = []
+    check = False
+    idx = 1
+    tempt = dict()
+    toggle = True
+    quest = ''
+    for i in lst:
+        if check:
+            id = 0
+            if len(i) == 0:
+                continue
+            while i[id] == ' ' or i[id] == '.' or i[id] == '1' or i[id] == '2' or i[id] == '3' or i[id] == '4':
+                id += 1 
+                
+            quest += i[id::]
+            check = False
+            continue
+        if i[0:2] == '문제':
+            if len(i) == 2:
+                check = True
+            else:
+                id = 2
+                while id <len(i) and i[id] == ' ':
+                    id += 1
+                if len(i) == id:
+                    check = True
+                    continue
+                b = i[id::]
+                quest += b
+        elif i[0:3] == '```':
+            if toggle == True:
+                tempt['language'] = i[4::]+'\n'
+                toggle = False
+            else:
+                tempt['content'] = quest
+                quest = ''
+                toggle = True
+                rtr.append(tempt)
+                tempt = dict()
+        elif not toggle:
+            quest += i+'\n'
+    print(rtr)
+    return rtr
+            
+            
 @api_view(['POST'])
 def GenerateQuestion(request):
     print(request.data.get('selections'))
@@ -158,7 +204,7 @@ def GenerateQuestion(request):
             tmp = dict()
             tmp['type'] = Quest_dict[tempt]
             a, t = query_view(request,Quest_dict[tempt], request.data.get('selections')[tempt])
-            tmp['items'] = GenerateWriteProblem(t)
+            tmp['items'] = Code_problem(t)
             tmp['count'] = request.data.get('selections')[tempt]
             answer['questions'].append(tmp)
             

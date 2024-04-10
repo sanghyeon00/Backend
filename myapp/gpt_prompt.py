@@ -90,6 +90,18 @@ def prompt_6(count):
 정답은 문제 바로 밑에 띄워줘 정답을 띄울때는 "정답: O"  같이 띄워줘
 '''
 
+Code_message = '''
+우리가 코드 관련 문제를 만들어달라고 할 때, '문제' 키워드를 그대로 적어주고 문제가 몇 번째인지는 적지마 '문제1'에서 1 같은 키워드는 없어야해 그리고 문제 바로 밑에 문제 내용을 적어줘. 
+우리가 문제를 만들어달라고 할 때, 문제와 관련된 부분을 제외한 추가적인 대답을 원하지 않아. (ex 네 알겠습니다)
+문제를 여러개 만들어 달라고 할 때는 문제와 문제사이는 반드시 '----------------' 출력해줘 이거를 제외하고는 아무것도 없어야해 공백이든 엔터든.
+'''
 
-prompt_lst = [0, prompt_1,prompt_2,prompt_3,prompt_4,prompt_5,prompt_6]
-System_lst = [0, Multipe_choice_blank_System_message, Multipe_choice_short_answer_System_message, Multipe_choice_one_sentence_System_message, Blank_System_message, Short_answer_message, OX_message]
+def prompt_7(count):
+    return f'''
+파이썬 상급 난이도의 코드 관련 문제를 {count}개 내줘 내가 코드를 작성해야 하는 문제이고 코드 중간 부분을 비워놓는 형식으로 만들어줘. 다만 너무 아무것도 없으면 이상하니까 기본적인 변수정의나 함수 정의에 관한 코드는 적어줘 
+그리고 비워놓는 부분은 3줄 이상이였으면 좋겠어 코드를 3줄정도는 작성해야 할 거 같거든 그리고 어떤 코드가 필요한지 TODO 주석을 이용해서 표시해서 문제를 
+'''
+
+
+prompt_lst = [0, prompt_1,prompt_2,prompt_3,prompt_4,prompt_5,prompt_6, prompt_7]
+System_lst = [0, Multipe_choice_blank_System_message, Multipe_choice_short_answer_System_message, Multipe_choice_one_sentence_System_message, Blank_System_message, Short_answer_message, OX_message, Code_message]
