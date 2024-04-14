@@ -15,10 +15,10 @@ environ.Env.read_env(BASE_DIR/'.env')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('Backend'),
-        'USER': env('dbmasteruser'),
-        'PASSWORD': env('lc3_Kd&0:>d;TVC*:^6Yt-J74^4RUl'),
-        'HOST': env('ls-a9d78eef4acd00c7534698674be58ecdfb986bd0.cn088usqyhrd.ap-northeast-2.rds.amazonaws.com'), 
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('PASSWORD'),
+        'HOST': env('DB_PASSWORD'), 
         'PORT': '5432',
     }
 }
