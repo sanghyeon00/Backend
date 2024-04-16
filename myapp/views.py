@@ -21,7 +21,6 @@ env = environ.Env()
 environ.Env.read_env(Path(__file__).resolve().parent/'.env')
 history = []
 openai.api_key = env('Key')
-
 Quest_dict = {'객관식-빈칸': 1, '객관식-단답형': 2, '객관식-문장형': 3, '단답형-빈칸': 4, '단답형-문장형': 5, 'OX선택형-O/X': 6, '서술형-코딩': 7}
 def get_completion(prompt, numberKey,count):     
     history.append({'role':'user','content':gpt_prompt.prompt_1}) 
