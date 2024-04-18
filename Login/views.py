@@ -3,75 +3,117 @@ from django.shortcuts import render, HttpResponse, redirect
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken  # Refresh ÅäÅ« »ı¼ºÀ» À§ÇÑ Å¬·¡½º
-from rest_framework import status  # HTTP »óÅÂ ÄÚµå
-from rest_framework.response import Response  # DRF ÀÀ´ä Å¬·¡½º
-from rest_framework.views import APIView  # DRF API ºä Å¬·¡½º
-from django.contrib.auth import authenticate  # DjangoÀÇ ÀÎÁõ ÇÔ¼ö
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import status  # HTTP ìƒíƒœ ì½”ë“œ
+from rest_framework.response import Response  # DRF ì‘ë‹µ í´ë˜ìŠ¤
+from rest_framework.views import APIView  # DRF API ë·° í´ë˜ìŠ¤
+from django.contrib.auth import authenticate,login,logout  # Djangoì˜ ì¸ì¦ í•¨ìˆ˜
+from django.http import HttpResponse
+from django.contrib.auth.models import User
+from django.views import View
 user_data = dict()
-
-
+from django.http import HttpRequest
+from rest_framework.permissions import AllowAny
 from django.shortcuts import render 
 from django.http import JsonResponse
 from myapp import gpt_prompt
 import os
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 # Create your views here.
-from .models import MyModel
+from .models import School
 def index(request):
     return HttpResponse("Communication start")
 
 
-@api_view(['POST'])
 def sign_up(request):
-    check_name_id = request.data.get('id')
-    try:
-        MyModel.objects.get(id = check_name_id)
-        return Response({'message': 'Fail'}, status=409)
-    except:
-        sign_name_id = request.data.get('id')
-        sign_password = request.data.get('password')
-        sign_password_2 = request.data.get('passwordcheack')
-        sign_name = request.data.get('name')
-        sign_student_id = request.data.get('studentid')
-        sign_e_mail = request.data.get('email')
-        sign_phone_number = request.data.get('phone')
-        sign_year = request.data.get('year')
-        sign_month = request.data.get('month')
-        sign_day = request.data.get('day')
-        sign_gender = request.data.get('gender')
-        instance = MyModel(id = sign_name_id, password  = sign_password, name = sign_name, studentid  = sign_student_id, email  = sign_e_mail, phone = sign_phone_number, year = sign_year, month = sign_month, day = sign_day, gender = sign_gender)
-        instance.save()
-        return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+    sign_name_id = request.data.get('id')
+    sign_password = request.data.get('password')
+    print('check password',sign_password)
+    sign_password_2 = request.data.get('passwordcheack')
+    sign_name = request.data.get('name')
+    sign_student_id = request.data.get('studentid')
+    sign_e_mail = request.data.get('email')
+    sign_phone_number = request.data.get('phone')
+    sign_year = request.data.get('year')
+    sign_month = request.data.get('month')
+    sign_day = request.data.get('day')
+    sign_gender = request.data.get('gender')
+    check_usertype = request.data.get('usertype')
+    instance = School.objects.create_user(username = sign_name_id, password  = sign_password, name = sign_name, studentid  = sign_student_id, email  = sign_e_mail, phone = sign_phone_number, year = sign_year, month = sign_month, day = sign_day, gender = sign_gender, usertype = check_usertype )
+    instance.save()
+    print(f'{check_usertype} {sign_name_id} íšŒì›ê°€ì… í•˜ì˜€ìŠµë‹ˆë‹¤.')
+    return True
 
 
 @api_view(['POST'])
 def id_check(request):
-    check_name_id = request.data.get('name_id')
+    check_name_id = request.data.get('id')
     try:
-        MyModel.objects.get(name_id = check_name_id)
+        obj = School.objects.get(username = check_name_id)
+        print(obj.password)
+        print("ë‹‰ë„¤ì„ ì¤‘ë³µí™•ì¸")
         return Response({'message': 'Fail'}, status=409)
     except:
-        return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        print("ë‹‰ë„¤ì„ ì¤‘ë³µì•„ë‹˜")
+        return Response({'message': 'Success'}, status=201)
+    
+    
+def sign_in(request):
+    check_name_id = request.data.get('username')
+    check_password = request.data.get('password')
+    check_usertype = request.data.get('usertype')
+    print(f'{check_usertype} {check_name_id} ë¡œê·¸ì¸ ì‹œë„í•˜ì˜€ìŠµë‹ˆë‹¤.', end = '   ')
+    try:
+        obj = School.objects.get(id = check_name_id)
+        if obj.password == check_password:
+            print("ë¡œê·¸ì¸ ì„±ê³µ")
+            return True
+        else:
+            print("ë¡œê·¸ì¸ ì‹¤íŒ¨")
+            return False
+    except:
+        print("ë¡œê·¸ì¸ ì‹¤íŒ¨")
+        return False
+    
     
 class CustomTokenObtainPairView(APIView):
     def post(self, request, *args, **kwargs):
-        # ¿äÃ»¿¡¼­ username°ú password¸¦ °¡Á®¿É´Ï´Ù.
-        print(3)
+        # ìš”ì²­ì—ì„œ usernameê³¼ passwordë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤
+        username = request.data.get('username')
+        usertype = request.data.get('usertype')
+        password = request.data.get('password')
+        print(f'{usertype} {username} ë¡œê·¸ì¸ ì‹œë„í•˜ì˜€ìŠµë‹ˆë‹¤.', end = '   ')
+        try:
+            user = authenticate(request, username=username, password=password)
+            if not user:
+                print("ìµœì¢… ë¡œê·¸ì¸ ì‹¤íŒ¨")
+                return Response({'error': 'ì¸ì¦ ì‹¤íŒ¨'}, status=status.HTTP_401_UNAUTHORIZED)
+            print(password)
+            print("ì‚¬ì‹¤ ì—¬ê¸°ê¹Œì§€ëŠ” ì˜´")
+            # ì‚¬ìš©ìë¥¼ ìœ„í•œ ìƒˆë¡œìš´ refresh í† í°ê³¼ access í† í°ì„ ìƒì„±í•©ë‹ˆë‹¤.
+            refresh = TokenObtainPairSerializer.get_token(user)
+            print("ë¡œê·¸ì¸ ì„±ê³µ")
+            login(request, user)
+            print(refresh.access_token)
+            return Response({'refresh_token': str(refresh),  # Refresh í† í°
+                'access_token': str(refresh.access_token),  # Access í† í°
+            }, status=status.HTTP_200_OK)
+        except:
+            print("except ìµœì¢… ë¡œê·¸ì¸ ì‹¤íŒ¨")
+            return Response({'error': 'ì¸ì¦ ì‹¤íŒ¨'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    
+    
+class RegisterView(APIView):
+    def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
-        
-        # DjangoÀÇ authenticate ÇÔ¼ö¸¦ »ç¿ëÇÏ¿© »ç¿ëÀÚ ÀÎÁõÀ» ½ÃµµÇÕ´Ï´Ù.
-        try:
-            user = MyModel.objects.get(id = username)
+        sign_up(request)
+        return HttpResponse("User created successfully", status=200) 
+    
 
-        # »ç¿ëÀÚ ÀÎÁõÀÌ ¼º°øÇÑ °æ¿ì
-            if user.password == password:
-                # »ç¿ëÀÚ¸¦ À§ÇÑ »õ·Î¿î refresh ÅäÅ«°ú access ÅäÅ«À» »ı¼ºÇÕ´Ï´Ù.
-                refresh = RefreshToken.for_user(user)
-                return Response({
-                    'refresh': str(refresh),  # Refresh ÅäÅ«
-                    'access': str(refresh.access_token),  # Access ÅäÅ«
-                }, status=status.HTTP_200_OK)
-        except:
-            return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_view(request):
+   return Response(data={"message": "This is a protected GET request."})
