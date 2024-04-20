@@ -30,7 +30,6 @@ def sign_up(request):
     sign_name_id = request.data.get('id')
     sign_password = request.data.get('password')
     print('check password',sign_password)
-    sign_password_2 = request.data.get('passwordcheack')
     sign_name = request.data.get('name')
     sign_student_id = request.data.get('studentid')
     sign_e_mail = request.data.get('email')
