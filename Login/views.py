@@ -21,7 +21,7 @@ import os
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 # Create your views here.
-from .models import School
+from .models import school
 def index(request):
     return HttpResponse("Communication start")
 
@@ -40,7 +40,7 @@ def sign_up(request):
     sign_day = request.data.get('day')
     sign_gender = request.data.get('gender')
     check_usertype = request.data.get('usertype')
-    instance = School.objects.create_user(username = sign_name_id, password  = sign_password, name = sign_name, studentid  = sign_student_id, email  = sign_e_mail, phone = sign_phone_number, year = sign_year, month = sign_month, day = sign_day, gender = sign_gender, usertype = check_usertype )
+    instance = school.objects.create_user(username = sign_name_id, password  = sign_password, name = sign_name, studentid  = sign_student_id, email  = sign_e_mail, phone = sign_phone_number, year = sign_year, month = sign_month, day = sign_day, gender = sign_gender, usertype = check_usertype )
     instance.save()
     print(f'{check_usertype} {sign_name_id} 회원가입 하였습니다.')
     return True
@@ -50,7 +50,7 @@ def sign_up(request):
 def id_check(request):
     check_name_id = request.data.get('id')
     try:
-        obj = School.objects.get(username = check_name_id)
+        obj = school.objects.get(username = check_name_id)
         print(obj.password)
         print("닉네임 중복확인")
         return Response({'message': 'Fail'}, status=409)
@@ -65,7 +65,7 @@ def sign_in(request):
     check_usertype = request.data.get('usertype')
     print(f'{check_usertype} {check_name_id} 로그인 시도하였습니다.', end = '   ')
     try:
-        obj = School.objects.get(id = check_name_id)
+        obj = school.objects.get(id = check_name_id)
         if obj.password == check_password:
             print("로그인 성공")
             return True
