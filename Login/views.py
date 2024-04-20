@@ -95,7 +95,7 @@ class CustomTokenObtainPairView(APIView):
             refresh = TokenObtainPairSerializer.get_token(user)
             print("로그인 성공")
             login(request, user)
-            print(refresh.access_token)
+
             return Response({'refresh_token': str(refresh),  # Refresh 토큰
                 'access_token': str(refresh.access_token),  # Access 토큰
             }, status=status.HTTP_200_OK)
@@ -116,4 +116,5 @@ class RegisterView(APIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_view(request):
-   return Response(data={"message": "This is a protected GET request."})
+    print(f'토큰 체크 id == {request.user.id}')
+    return Response(data={"message": "This is a protected GET request."})

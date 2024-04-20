@@ -15,10 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from daily import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('myapp.urls')),
-    path('', include('Login.urls')),
-    path('', include('daily.urls'))
+    path('generate_daily/', views.generate_daily),
 ]
