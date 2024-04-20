@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
     
 class school(AbstractUser):
     username = models.CharField(max_length=15, unique=True)
-    password = models.CharField(max_length=15)
+    password = models.CharField(max_length=100)
     passwordcheack = models.CharField(max_length=15)
     name = models.CharField(max_length=10)
     studentid = models.CharField(max_length=10)
