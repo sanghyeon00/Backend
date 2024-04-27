@@ -27,7 +27,7 @@ def sign_up(request):
     check_name_id = request.data.get('id')
     try:
         MyModel.objects.get(id = check_name_id)
-        return Response({'message': 'Fail'}, status=409)
+        return Response({'message': 'Fail'}, status=status.HTTP_200_OK)
     except:
         sign_name_id = request.data.get('id')
         sign_password = request.data.get('password')
