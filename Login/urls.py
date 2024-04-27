@@ -23,6 +23,6 @@ urlpatterns = [
     path('sign_up/', views.RegisterView.as_view()),
     path('sign_in/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('access_token_check/', views.my_view , name='check')
-    
+    path('access_token_check/', views.my_view , name='check'),
+    path('position_check/', views.position_check)
 ]

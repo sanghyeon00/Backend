@@ -19,7 +19,6 @@ import os
 env = environ.Env()
 environ.Env.read_env(Path(__file__).resolve().parent/'.env')
 openai.api_key = env('Key')
-
 def generate_blog(who, what, why, where, when, how, prompt_korean_template):
     model_engine = "gpt-3.5-turbo"
     prompt_korean = prompt_korean_template.format(

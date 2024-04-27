@@ -19,6 +19,6 @@ from myapp import views
 
 urlpatterns = [
     path('', views.index),
-    path('login/', views.login_view),
-    path('GenerateQuestion/', views.GenerateQuestion)
+    path('GenerateQuestion/', views.GenerateQuestion),
+    path('course_view/', views.course_view)
 ]
