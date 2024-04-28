@@ -255,7 +255,8 @@ def course_view(request):
         tempt['key'] = i.id
         tempt['name'] = i.name
         obj = professor_lecture.objects.filter(username = user_name, course_name = i.name)
-        if obj == None: 
+        print(obj)
+        if not obj.exists():
             rtr['lecture'].append(tempt)
     return Response(rtr, status=status.HTTP_200_OK)
     
