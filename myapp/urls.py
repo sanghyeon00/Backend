@@ -20,5 +20,8 @@ from myapp import views
 urlpatterns = [
     path('', views.index),
     path('GenerateQuestion/', views.GenerateQuestion),
-    path('course_view/', views.course_view)
+    path('course_view/', views.course_view),
+    path('lecture_apply/', views.lecture_apply),
+    path('lecture_generate/', views.lecture_generate),
+    path('lecture_show/', views.lecture_show)
 ]

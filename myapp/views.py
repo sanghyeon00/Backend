@@ -182,6 +182,9 @@ def GenerateQuestion(request):
     ans = {}
     ans['questions'] = []
     problem_lst = []
+    for _ in range(10):
+        problem_lst.append('')
+    cnt = 0
     for m in range(1,8):
         for tempt in request.data.get('selections'):
             if 1 <= Quest_dict[tempt] <= 3 and m == Quest_dict[tempt]:
@@ -190,35 +193,39 @@ def GenerateQuestion(request):
                 a, t = query_view(request,Quest_dict[tempt], request.data.get('selections')[tempt])
                 tmp['items'] = GenerateMultipleProblem(t)
                 tmp['count'] = request.data.get('selections')[tempt]
+                c = request.data.get('selections')[tempt]
                 ans['questions'].append(tmp)
                 for k in tmp['items']:
-                    tempt_content = ''
+                    tempt_content = f'{Quest_dict[tempt]}'
                     for i in k:
                         if i == 'content':
-                            tempt_content += k[i]
+                            tempt_content += '$$'+k[i]
                         elif i == 'options':
                             for id, j in enumerate(k[i]):
-                                tempt_content += f'{id+1}번 : ' +j
+                                tempt_content += '$$'+f'{id+1}번 : ' +j
                         elif i == 'answer':
-                            tempt_content += k[i]
-                    problem_lst.append(tempt_content)
-                        
-                    
+                            tempt_content += '$$'+k[i]
+                    tempt_content += f'$${c}'
+                    problem_lst[cnt] = tempt_content
+                    cnt += 1
             elif 4 <= Quest_dict[tempt] <= 6 and m == Quest_dict[tempt]:
                 tmp = dict()
                 tmp['type'] = Quest_dict[tempt]
                 a, t = query_view(request,Quest_dict[tempt], request.data.get('selections')[tempt])
                 tmp['items'] = GenerateWriteProblem(t)
                 tmp['count'] = request.data.get('selections')[tempt]
+                c = request.data.get('selections')[tempt]
                 ans['questions'].append(tmp)
                 for k in tmp['items']:
-                    tempt_content = ''
+                    tempt_content = f'{Quest_dict[tempt]}'
                     for i in k:
                         if i == 'content':
-                            tempt_content += k[i]
+                            tempt_content += '$$'+k[i]
                         elif i == 'answer':
-                            tempt_content += k[i]
-                    problem_lst.append(tempt_content)
+                            tempt_content += '$$'+k[i]
+                    tempt_content +=  f'$${c}'
+                    problem_lst[cnt] = tempt_content
+                    cnt += 1
             elif Quest_dict[tempt] == 7 and m == Quest_dict[tempt]:
                 tmp = dict()
                 tmp['type'] = Quest_dict[tempt]
@@ -228,6 +235,12 @@ def GenerateQuestion(request):
                 ans['questions'].append(tmp)
                 problem_lst.append(t)
     print(problem_lst)
+    course_name = request.data.get('name') # course name 가져오기
+    professor_user_name = request.user.username # professor username 가져오기
+    professor_user_id = request.user.id # professor username 가져오기
+    lecture = professor_lecture.objects.filter(name=course_name, username=professor_user_name).first()
+    obj = problem(problem_1 = problem_lst[0], problem_2 = problem_lst[1] , problem_3 = problem_lst[2], problem_4 = problem_lst[3], problem_5 = problem_lst[4], problem_6 = problem_lst[5], problem_7 = problem_lst[6], problem_8 = problem_lst[7], problem_9 = problem_lst[8], problem_10 = problem_lst[9], lecture_id = lecture.id, professor_id = professor_user_id)
+    obj.save()
     print(ans)
     return Response(ans, status=status.HTTP_200_OK)
     
@@ -236,25 +249,15 @@ def course_view(request):
     all_courses = course.objects.all()
     rtr = dict()
     rtr['lecture'] = []
+    user_name = request.user.username
     for i in all_courses:
         tempt = dict()
         tempt['key'] = i.id
-        tempt['name'] = i.name 
-        rtr['lecture'].append(tempt)
+        tempt['name'] = i.name
+        obj = professor_lecture.objects.filter(username = user_name, course_name = i.name)
+        if obj == None: 
+            rtr['lecture'].append(tempt)
     return Response(rtr, status=status.HTTP_200_OK)
-
-@api_view(['POST'])
-def lecture_apply(request): ## 강의 신청 함수
-    id = request.user.id
-    username = request.user.username
-    course_name = request.data.get('name')
-    lecture = professor_lecture.objects.filter(username = username, course_name = course_name) ## 필터 걸러보고 있으면 401신호 없으면 데이터베이스 추가
-    if not lecture:
-        obj = course.object.get(name = course_name)
-        professor_lecture.objects.create(username = username, course_name = course_name, course_id = obj.id)
-        return Response({"course_name":course_name}, status=200)
-    else:
-        return Response({}, status=201) ## 이미 똑같은 강의를 신청한 경우
     
 @api_view(['GET'])    
 def lecture_show(request): ## my 강의 
@@ -265,8 +268,25 @@ def lecture_show(request): ## my 강의
         rtr = dict()
         rtr['lecture'] = []
         for k in lecture:
-            rtr['lecture'].append({'username':username,'course_name':k.course_name, 'course_id':k.course_id})
+            rtr['lecture'].append({'course_name':k.course_name, 'course_id':k.course_id})
         return Response(rtr, status = 200)
     else:
         return Response({}, status = 201) # 강의가 없는 경우
+    
+    
+@api_view(['POST'])   
+def lecture_generate(request): ## my 강의 
+    try:
+        user_name = request.user.username
+        coursename = request.data.get('subject')
+        obj = course.obj.filter(name = coursename).first()
+        pl = professor_lecture.objects.create(username = user_name, course_name = coursename, course_id = obj.id)
+        pl.save()
+        return Response({'message':'success'}, status = 200)
+    except:
+        print("강의생성 되지않음")
+        return Response({'message':'fail'}, status = 444)
+    
+    
+    
     

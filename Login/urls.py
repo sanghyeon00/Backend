@@ -24,5 +24,5 @@ urlpatterns = [
     path('sign_in/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('access_token_check/', views.my_view , name='check'),
-    path('position_check/', views.position_check)
+    path('position_check/', views.position_check, name = 'position')
 ]
