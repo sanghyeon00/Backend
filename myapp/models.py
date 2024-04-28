@@ -10,12 +10,14 @@ class professor_lecture(models.Model):
     username = models.CharField(max_length=30)
     course_name = models.CharField(max_length=30)
     course_id = models.CharField(max_length=30)
+    name = models.CharField(max_length=30)
 
 class student_lecture(models.Model):
     username = models.CharField(max_length=30)
     course_name = models.CharField(max_length=30)
     course_id = models.CharField(max_length=30)
     lecture_id = models.CharField(max_length=30)
+    name = models.CharField(max_length=30)
     
 class problem(models.Model):
     professor_id = models.CharField(max_length=30)

@@ -17,9 +17,9 @@ from myapp import gpt_prompt
 import openai
 import os
 from .models import course, professor_lecture, student_lecture, problem, answer
-env = environ.Env()
-environ.Env.read_env(Path(__file__).resolve().parent/'.env')
-openai.api_key = env('Key')
+# env = environ.Env()
+# environ.Env.read_env(Path(__file__).resolve().parent/'.env')
+# openai.api_key = env('Key')
 Quest_dict = {'객관식-빈칸': 1, '객관식-단답형': 2, '객관식-문장형': 3, '단답형-빈칸': 4, '단답형-문장형': 5, 'OX선택형-O/X': 6, '서술형-코딩': 7}
 history = []
 def get_completion(prompt, numberKey,count):     
@@ -258,6 +258,7 @@ def course_view(request):
         print(obj)
         if not obj.exists():
             rtr['lecture'].append(tempt)
+    print(rtr)
     return Response(rtr, status=status.HTTP_200_OK)
     
 @api_view(['GET'])    
@@ -265,11 +266,13 @@ def lecture_show(request): ## my 강의
     id = request.user.id
     username = request.user.username
     lecture = professor_lecture.objects.filter(username = username)
-    if lecture:
+    print(f'{username} 교수님 나의 강의 보기')
+    if lecture.exists():
         rtr = dict()
         rtr['lecture'] = []
         for k in lecture:
-            rtr['lecture'].append({'course_name':k.course_name, 'course_id':k.course_id})
+            rtr['lecture'].append({'name':k.course_name, 'course_id':k.course_id})
+        print(rtr)
         return Response(rtr, status = 200)
     else:
         return Response({}, status = 201) # 강의가 없는 경우
@@ -280,7 +283,14 @@ def lecture_generate(request): ## my 강의
     try:
         user_name = request.user.username
         coursename = request.data.get('subject')
-        obj = course.obj.filter(name = coursename).first()
+        
+        tmp = professor_lecture.objects.filter(username = user_name, course_name = coursename)
+        print(tmp)
+        if tmp.exists():
+            print("이미 있는 강의입니다.")
+            return Response({'message':'This lecture is already did.'}, status = 422)
+        
+        obj = course.objects.filter(name = coursename).first()
         pl = professor_lecture.objects.create(username = user_name, course_name = coursename, course_id = obj.id)
         pl.save()
         return Response({'message':'success'}, status = 200)
@@ -290,4 +300,54 @@ def lecture_generate(request): ## my 강의
     
     
     
+@api_view(['GET'])
+def lecture_view(request): # for student
+    all_lecture = professor_lecture.objects.all()
+    rtr = dict()
+    rtr['lecture'] = []
+    user_name = request.user.username
+    for i in all_lecture:
+        tempt = dict()
+        tempt['course'] = i.course_name
+        tempt['name'] = i.username # 실제이름
+        tempt['lecture_number'] = i.id
+        obj = student_lecture.objects.filter(username = user_name, course_name = i.course_name)
+        print(obj)
+        if not obj.exists():
+            rtr['lecture'].append(tempt)
+    return Response(rtr, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])   
+def lecture_apply(request): # for student
+    try:
+        user_name = request.user.username
+        # user_name = request.user.username 나중에는 그냥 name 필요
+        lecture_number = request.data.get('lecture_number')
+        coursename = request.data.get('course_name')
+        obj = course.objects.filter(name = coursename).first()
+        lecture_number = request.data.get('lecture_number')
+        sl = student_lecture.objects.create(username = user_name, course_name = coursename, course_id = obj.id, lecture_id = lecture_number, name = user_name) # name은 나중에 실제이름으로 대체
+        sl.save()
+        return Response({'message':'success'}, status = 200)
+    except:
+        print("강의신청 되지않음")
+        return Response({'message':'fail'}, status = 444)
     
+@api_view(['POST'])   
+def my_lecture_show(request): # for student
+    try:
+        obj = student_lecture.objects.filter(username = request.user.username)
+        rtr = dict()
+        rtr['lecture'] = []
+        for i in obj:
+            tmp = professor_lecture.objects.filter(id = i.lecture_id).first()
+            tempt = dict()
+            tempt['course_name'] = i.course_name
+            tempt['professor_name'] = tmp.name
+            tempt['lecture_id'] = i.lecture_id
+            rtr.append(tempt) 
+        return Response({'message':'success'}, status = 200)
+    except:
+        print("강의신청 되지않음")
+        return Response({'message':'fail'}, status = 444)
