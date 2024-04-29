@@ -285,7 +285,7 @@ def lecture_generate(request): ## my 강의
     try:
         user_name = request.user.username
         coursename = request.data.get('subject')
-        
+        print("교수 이름",user_name)
         tmp = professor_lecture.objects.filter(username = user_name, course_name = coursename)
         print(tmp)
         if tmp.exists():

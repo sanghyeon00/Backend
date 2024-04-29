@@ -79,12 +79,17 @@ def sign_in(request):
 class CustomTokenObtainPairView(APIView):
     def post(self, request, *args, **kwargs):
         # 요청에서 username과 password를 가져옵니다
-        username = request.data.get('username')
-        usertype = request.data.get('usertype')
+        user_name = request.data.get('username')
+        user_type = request.data.get('usertype')
         password = request.data.get('password')
-        print(f'{usertype} {username} 로그인 시도하였습니다.', end = '   ')
+        print(f'{user_type} {user_name} 로그인 시도하였습니다.', end = '   ')
         try:
-            user = authenticate(request, username=username, password=password)
+            user = authenticate(request, username=user_name, password=password)
+            obj = school.objects.get(username = user_name)
+            print(obj.usertype)
+            if obj.usertype != user_type:
+                print("유저 타입 맞지 않음.")
+                return Response({'error': '인증 실패'}, status=status.HTTP_401_UNAUTHORIZED)
             if not user:
                 print("최종 로그인 실패")
                 return Response({'error': '인증 실패'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -102,7 +107,14 @@ class CustomTokenObtainPairView(APIView):
             print("except 최종 로그인 실패")
             return Response({'error': '인증 실패'}, status=status.HTTP_401_UNAUTHORIZED)
     
-    
+class LogoutAPIView(APIView):
+    def post(self, request):
+        try:
+            # 사용자 세션 로그아웃
+            logout(request)
+            return Response(status=200)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)  
     
 class RegisterView(APIView):
     def post(self, request):
@@ -117,6 +129,19 @@ class RegisterView(APIView):
 def my_view(request):
     print(f'토큰 체크 id ======= {request.user.id}')
     return Response(data={"message": "This is a protected GET request."})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_view(request):
+    print(f'토큰 체크 id ======= {request.user.id}')
+    return Response(data={"message": "This is a protected GET request."})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_view(request):
+    print(f'토큰 체크 id ======= {request.user.id}')
+    return Response(data={"name": request.user.name})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
