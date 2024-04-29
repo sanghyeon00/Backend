@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from django.shortcuts import render, HttpResponse, redirect
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 import openai
 import os
 import environ
 
-
+from rest_framework.permissions import IsAuthenticated
 user_data = dict()
 
 from pathlib import Path
@@ -17,9 +17,9 @@ from myapp import gpt_prompt
 import openai
 import os
 from .models import course, professor_lecture, student_lecture, problem, answer
-# env = environ.Env()
-# environ.Env.read_env(Path(__file__).resolve().parent/'.env')
-# openai.api_key = env('Key')
+env = environ.Env()
+environ.Env.read_env(Path(__file__).resolve().parent/'.env')
+openai.api_key = env('Key')
 Quest_dict = {'객관식-빈칸': 1, '객관식-단답형': 2, '객관식-문장형': 3, '단답형-빈칸': 4, '단답형-문장형': 5, 'OX선택형-O/X': 6, '서술형-코딩': 7}
 history = []
 def get_completion(prompt, numberKey,count):     
@@ -245,11 +245,13 @@ def GenerateQuestion(request):
     return Response(ans, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def course_view(request):
     all_courses = course.objects.all()
     rtr = dict()
     rtr['lecture'] = []
     user_name = request.user.username
+    print(f'course_view : for {user_name}')
     for i in all_courses:
         tempt = dict()
         tempt['key'] = i.id
@@ -258,20 +260,20 @@ def course_view(request):
         print(obj)
         if not obj.exists():
             rtr['lecture'].append(tempt)
-    print(rtr)
+    # print(rtr)
     return Response(rtr, status=status.HTTP_200_OK)
     
 @api_view(['GET'])    
 def lecture_show(request): ## my 강의 
     id = request.user.id
-    username = request.user.username
-    lecture = professor_lecture.objects.filter(username = username)
-    print(f'{username} 교수님 나의 강의 보기')
+    user_name = request.user.username
+    lecture = professor_lecture.objects.filter(username = user_name)
+    print(f'{user_name} 교수님 나의 강의 보기')
     if lecture.exists():
         rtr = dict()
         rtr['lecture'] = []
         for k in lecture:
-            rtr['lecture'].append({'name':k.course_name, 'course_id':k.course_id})
+            rtr['lecture'].append({'name':k.course_name, 'key':k.course_id})
         print(rtr)
         return Response(rtr, status = 200)
     else:
@@ -288,7 +290,7 @@ def lecture_generate(request): ## my 강의
         print(tmp)
         if tmp.exists():
             print("이미 있는 강의입니다.")
-            return Response({'message':'This lecture is already did.'}, status = 422)
+            return Response({'message':'This lecture is already'}, status = 422)
         
         obj = course.objects.filter(name = coursename).first()
         pl = professor_lecture.objects.create(username = user_name, course_name = coursename, course_id = obj.id)

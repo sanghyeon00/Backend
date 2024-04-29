@@ -115,7 +115,7 @@ class RegisterView(APIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_view(request):
-    print(f'토큰 체크 id == {request.user.id}')
+    print(f'토큰 체크 id ======= {request.user.id}')
     return Response(data={"message": "This is a protected GET request."})
 
 @api_view(['GET'])
@@ -123,5 +123,7 @@ def my_view(request):
 def position_check(request):
     if request.user.usertype == 'student':
         return Response(data={"message": "This is a protected GET request."},status=200)
-    else:
+    elif request.user.usertype == 'professor':
         return Response(data={"message": "This is a protected GET request."},status=201)
+    else:
+        return Response(data={"message": "This is a protected GET request."},status=202)
