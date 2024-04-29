@@ -16,9 +16,10 @@ from django.http import JsonResponse
 from myapp import gpt_prompt
 import openai
 import os
-env = environ.Env()
-environ.Env.read_env(Path(__file__).resolve().parent/'.env')
-openai.api_key = env('Key')
+# env = environ.Env()
+# environ.Env.read_env(Path(__file__).resolve().parent/'.env')
+# openai.api_key = env('Key')
+openai.api_key = "sk-proj-KaOfyWZcPMB6xjBWDjlRT3BlbkFJmZD6A8IN0D4Gbyj0yuuc"
 def generate_blog(who, what, why, where, when, how, prompt_korean_template):
     model_engine = "gpt-3.5-turbo"
     prompt_korean = prompt_korean_template.format(

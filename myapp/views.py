@@ -17,9 +17,10 @@ from myapp import gpt_prompt
 import openai
 import os
 from .models import course, professor_lecture, student_lecture, problem, answer
-env = environ.Env()
-environ.Env.read_env(Path(__file__).resolve().parent/'.env')
-openai.api_key = env('Key')
+# env = environ.Env()
+# environ.Env.read_env(Path(__file__).resolve().parent/'.env')
+# openai.api_key = env('Key')
+openai.api_key = "sk-proj-KaOfyWZcPMB6xjBWDjlRT3BlbkFJmZD6A8IN0D4Gbyj0yuuc"
 Quest_dict = {'객관식-빈칸': 1, '객관식-단답형': 2, '객관식-문장형': 3, '단답형-빈칸': 4, '단답형-문장형': 5, 'OX선택형-O/X': 6, '서술형-코딩': 7}
 history = []
 def get_completion(prompt, numberKey,count):     
@@ -311,8 +312,8 @@ def lecture_view(request): # for student
     for i in all_lecture:
         tempt = dict()
         tempt['course'] = i.course_name
-        tempt['name'] = i.username # 실제이름
-        tempt['lecture_number'] = i.id
+        tempt['professor'] = i.name # 실제이름
+        tempt['lecture_id'] = i.id
         obj = student_lecture.objects.filter(username = user_name, course_name = i.course_name)
         print(obj)
         if not obj.exists():
@@ -325,8 +326,8 @@ def lecture_apply(request): # for student
     try:
         user_name = request.user.username
         # user_name = request.user.username 나중에는 그냥 name 필요
-        lecture_number = request.data.get('lecture_number')
-        coursename = request.data.get('course_name')
+        lecture_number = request.data.get('lecture_id')
+        coursename = request.data.get('course')
         obj = course.objects.filter(name = coursename).first()
         lecture_number = request.data.get('lecture_number')
         sl = student_lecture.objects.create(username = user_name, course_name = coursename, course_id = obj.id, lecture_id = lecture_number, name = user_name) # name은 나중에 실제이름으로 대체
