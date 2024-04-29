@@ -139,8 +139,8 @@ def my_view(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def my_view(request):
-    print(f'토큰 체크 id ======= {request.user.id}')
+def name_check(request):
+    print(f'이름 체크 id ======= {request.user.name}')
     return Response(data={"name": request.user.name})
 
 @api_view(['GET'])
