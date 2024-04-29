@@ -17,10 +17,9 @@ from myapp import gpt_prompt
 import openai
 import os
 from .models import course, professor_lecture, student_lecture, problem, answer
-# env = environ.Env()
-# environ.Env.read_env(Path(__file__).resolve().parent/'.env')
-# openai.api_key = env('Key')
-openai.api_key = "sk-proj-CmO2Py1IeXWxZ33nc9KmT3BlbkFJL5UqyI6o06B6iFXvxnqQ"
+env = environ.Env()
+environ.Env.read_env(Path(__file__).resolve().parent/'.env')
+openai.api_key = env('Key')
 Quest_dict = {'객관식-빈칸': 1, '객관식-단답형': 2, '객관식-문장형': 3, '단답형-빈칸': 4, '단답형-문장형': 5, 'OX선택형-O/X': 6, '서술형-코딩': 7}
 history = []
 def get_completion(prompt, numberKey,count):     
